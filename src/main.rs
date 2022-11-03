@@ -1,19 +1,18 @@
 // Rust media player
 // Plays an audio file using the rodio crate
 
-use rodio::{Decoder, OutputStream, Sink, Source};
-use std::fs::File;
-use std::io::BufReader;
+use soloud::*;
+use std::io;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Variables
     let volume = 0.1;
     let stopped = false;
 
     // Create an output stream
     println!("Creating output stream...");
-    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let sink = Sink::try_new(&stream_handle).unwrap();
+    let mut sl = Soloud::default()?;
+    let mut wav = audio::Wav::default();
 
     // Find all files and count them idk how this works
     let sounds = std::fs::read_dir("music")
@@ -21,7 +20,7 @@ fn main() {
         .map(|res| res.map(|e| e.path()))
         .collect::<Result<Vec<_>, std::io::Error>>()
         .unwrap();
-    println!("Files found ({}): \n{:?}", sounds.len(), sounds);
+    println!("Files found ({}): \n{:?}\n", sounds.len(), sounds);
 
     // Loop through all files
     while stopped == false {
@@ -33,20 +32,20 @@ fn main() {
 
         // Open the file
         println!("Opening file: {}", file_path);
-        let file = File::open(file_path).unwrap();
 
+        // Play the file
+        wav.load(&std::path::Path::new(file_path))?;
+        let vh = sl.play(&wav);
+        sl.set_volume(vh, volume);
+
+        // Print status
         println!("\nPLAYING SONG {}: {}", random, file_path);
         println!("Volume: {}%", volume * 100.0);
 
-        // Decode the file
-        let source = Decoder::new(BufReader::new(file))
-            .unwrap()
-            .amplify(volume);
-
-        // Play the file
-        sink.append(source);
-        
-        // Wait for it to finish
-        sink.sleep_until_end();
+        // Wait for the song to finish
+        while sl.voice_count() > 0 {
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
     }
+    Ok(())
 }
