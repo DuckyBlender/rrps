@@ -1,1 +1,3 @@
 flask
+# Aditionally
+# sudo apt install alsa-utils mpv -y

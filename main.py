@@ -12,8 +12,6 @@ stream_url = 'https://stream.open.fm/64'
 player_process = None
 
 # Define the endpoint to start the audio
-
-
 @app.route('/start')
 def start_audio():
     # Start the player process
