@@ -67,7 +67,8 @@ def change_volume(volume_level):
     
 
     # Change the volume using amixer
-    subprocess.Popen(['amixer', 'sset', 'Master', volume_level + '%'], shell=True, stdout=subprocess.PIPE).wait()
+    proc = subprocess.Popen(['amixer', '-D', 'pulse', 'sset', 'Master', volume_level + '%'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    proc.communicate()
 
     # Return a success message
     return 'Volume changed successfully!'
